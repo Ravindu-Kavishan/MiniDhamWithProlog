@@ -27,43 +27,47 @@ const getClosestPositionName = (x, y) => {
 
 export default function App() {
   const [ticks, setTicks] = useState([
-    { id: 1, position: null },
-    { id: 2, position: null },
-    { id: 3, position: null },
+    { position: null },
+    { position: null },
+    { position: null },
   ]);
 
-  const handleDrop = (e, tickId) => {
+  const handleDrop = (e) => {
+    const tickIndex = parseInt(e.dataTransfer.getData('text/plain'));
     const rect = e.currentTarget.getBoundingClientRect();
     const dropX = e.clientX - rect.left;
     const dropY = e.clientY - rect.top;
-
     const nearest = getClosestPositionName(dropX, dropY);
-    const newTicks = ticks.map((t) =>
-      t.id === tickId ? { ...t, position: nearest } : t
+
+    // Allow only one tick per position
+    const isOccupied = ticks.some((tick, index) => tick.position === nearest && index !== tickIndex);
+    if (isOccupied) return;
+
+    const newTicks = ticks.map((tick, index) =>
+      index === tickIndex ? { position: nearest } : tick
     );
     setTicks(newTicks);
   };
 
   const handlePrint = () => {
-    console.log('Tick Positions:');
-    ticks.forEach((t) => {
-      console.log(`Tick ${t.id}: ${t.position ?? 'not placed'}`);
-    });
+    const positions = ticks
+      .filter(tick => tick.position)
+      .map(tick => tick.position);
+    console.log(positions);
   };
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 gap-4">
       {/* Ticks outside */}
       <div className="flex gap-4">
-        {ticks.map((tick) => (
-          !tick.position && (
-            <div
-              key={tick.id}
-              draggable
-              onDragStart={(e) => e.dataTransfer.setData('text/plain', tick.id)}
-              className="w-4 h-4 bg-blue-500 rounded-full cursor-grab"
-            ></div>
-          )
+        {ticks.map((tick, index) => (
+          <div
+            key={index}
+            draggable
+            onDragStart={(e) => e.dataTransfer.setData('text/plain', index)}
+            className="w-4 h-4 bg-blue-500 rounded-full cursor-grab"
+            style={{ visibility: tick.position ? 'hidden' : 'visible' }}
+          ></div>
         ))}
       </div>
 
@@ -72,10 +76,7 @@ export default function App() {
         className="relative"
         style={{ width: 200, height: 200 }}
         onDragOver={(e) => e.preventDefault()}
-        onDrop={(e) => {
-          const tickId = parseInt(e.dataTransfer.getData('text/plain'));
-          handleDrop(e, tickId);
-        }}
+        onDrop={handleDrop}
       >
         {/* SVG board */}
         <svg width={200} height={200} className="absolute top-0 left-0">
@@ -86,14 +87,31 @@ export default function App() {
           <line x1="200" y1="0" x2="0" y2="200" stroke="black" strokeWidth="3" />
         </svg>
 
+        {/* Board labels */}
+        {Object.entries(namedPositions).map(([name, pos]) => (
+          <span
+            key={name}
+            className="absolute text-xs text-black"
+            style={{
+              left: pos.x + 8,
+              top: pos.y + 8,
+              pointerEvents: 'none',
+            }}
+          >
+            {name}
+          </span>
+        ))}
+
         {/* Ticks on board */}
-        {ticks.map((tick) => {
+        {ticks.map((tick, index) => {
           if (!tick.position) return null;
           const pos = namedPositions[tick.position];
           return (
             <div
-              key={tick.id}
-              className="absolute w-4 h-4 bg-blue-500 rounded-full cursor-default"
+              key={index}
+              draggable
+              onDragStart={(e) => e.dataTransfer.setData('text/plain', index)}
+              className="absolute w-4 h-4 bg-blue-500 rounded-full cursor-grab"
               style={{
                 left: pos.x - 8,
                 top: pos.y - 8,
