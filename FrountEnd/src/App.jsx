@@ -26,11 +26,12 @@ const getClosestPositionName = (x, y) => {
 };
 
 export default function App() {
-  const [ticks, setTicks] = useState([
+  const [userTicks, setUserTicks] = useState([
     { position: null },
     { position: null },
     { position: null },
   ]);
+  const [fixedRedTicks, setFixedRedTicks] = useState([]);
 
   const handleDrop = (e) => {
     const tickIndex = parseInt(e.dataTransfer.getData('text/plain'));
@@ -39,28 +40,46 @@ export default function App() {
     const dropY = e.clientY - rect.top;
     const nearest = getClosestPositionName(dropX, dropY);
 
-    // Allow only one tick per position
-    const isOccupied = ticks.some((tick, index) => tick.position === nearest && index !== tickIndex);
-    if (isOccupied) return;
+    // Block placing on red tick positions or duplicate user positions
+    const redOccupied = fixedRedTicks.includes(nearest);
+    const alreadyUsed = userTicks.some((tick, idx) => tick.position === nearest && idx !== tickIndex);
 
-    const newTicks = ticks.map((tick, index) =>
+    if (redOccupied || alreadyUsed) return;
+
+    const newTicks = userTicks.map((tick, index) =>
       index === tickIndex ? { position: nearest } : tick
     );
-    setTicks(newTicks);
+    setUserTicks(newTicks);
   };
 
-  const handlePrint = () => {
-    const positions = ticks
+  const handlePrintAndFetch = () => {
+    const userPositions = userTicks
       .filter(tick => tick.position)
       .map(tick => tick.position);
-    console.log(positions);
+
+    console.log('User ticks:', userPositions);
+
+    // Simulated backend call
+    setTimeout(() => {
+      const backendResponse = ['a', 'b', 'e']; // Replace with real backend call
+      setFixedRedTicks(backendResponse);
+    }, 500);
+
+    // Real backend example (uncomment when backend is ready):
+    /*
+    fetch('/api/get-red-positions')
+      .then(res => res.json())
+      .then(data => {
+        setFixedRedTicks(data.positions);
+      });
+    */
   };
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 gap-4">
-      {/* Ticks outside */}
+      {/* Draggable Blue Ticks */}
       <div className="flex gap-4">
-        {ticks.map((tick, index) => (
+        {userTicks.map((tick, index) => (
           <div
             key={index}
             draggable
@@ -87,28 +106,28 @@ export default function App() {
           <line x1="200" y1="0" x2="0" y2="200" stroke="black" strokeWidth="3" />
         </svg>
 
-        {/* Board labels */}
-        {Object.entries(namedPositions).map(([name, pos]) => (
-          <span
-            key={name}
-            className="absolute text-xs text-black"
-            style={{
-              left: pos.x + 8,
-              top: pos.y + 8,
-              pointerEvents: 'none',
-            }}
-          >
-            {name}
-          </span>
-        ))}
+        {/* Red (fixed) ticks */}
+        {fixedRedTicks.map((pos, index) => {
+          const coords = namedPositions[pos];
+          return (
+            <div
+              key={`red-${index}`}
+              className="absolute w-4 h-4 bg-red-500 rounded-full"
+              style={{
+                left: coords.x - 8,
+                top: coords.y - 8,
+              }}
+            ></div>
+          );
+        })}
 
-        {/* Ticks on board */}
-        {ticks.map((tick, index) => {
+        {/* Blue (user) ticks */}
+        {userTicks.map((tick, index) => {
           if (!tick.position) return null;
           const pos = namedPositions[tick.position];
           return (
             <div
-              key={index}
+              key={`user-${index}`}
               draggable
               onDragStart={(e) => e.dataTransfer.setData('text/plain', index)}
               className="absolute w-4 h-4 bg-blue-500 rounded-full cursor-grab"
@@ -124,9 +143,9 @@ export default function App() {
       {/* Button */}
       <button
         className="mt-4 px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
-        onClick={handlePrint}
+        onClick={handlePrintAndFetch}
       >
-        Log Tick Positions
+        Submit & Get Red Ticks
       </button>
     </div>
   );
