@@ -42,7 +42,7 @@ export default function App() {
         ))}
       </div>
 
-      {/* Board */}
+      
       <div
         className="relative"
         style={{ width: 200, height: 200 }}
