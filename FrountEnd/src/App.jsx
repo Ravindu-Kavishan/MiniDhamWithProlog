@@ -1,30 +1,6 @@
 import React, { useState } from "react";
-import { startGame } from "./utils";
-
-const namedPositions = {
-  a: { x: 0, y: 0 },
-  b: { x: 100, y: 0 },
-  c: { x: 200, y: 0 },
-  d: { x: 0, y: 100 },
-  e: { x: 100, y: 100 },
-  f: { x: 200, y: 100 },
-  g: { x: 0, y: 200 },
-  h: { x: 100, y: 200 },
-  i: { x: 200, y: 200 },
-};
-
-const getClosestPositionName = (x, y) => {
-  let closest = "a";
-  let minDist = Infinity;
-  for (const [key, pos] of Object.entries(namedPositions)) {
-    const dist = Math.hypot(x - pos.x, y - pos.y);
-    if (dist < minDist) {
-      minDist = dist;
-      closest = key;
-    }
-  }
-  return closest;
-};
+import { startGame } from "./backendCalling";
+import { getClosestPositionName, namedPositions, handleDrop } from "./utils";
 
 export default function App() {
   const [userTicks, setUserTicks] = useState([
@@ -34,26 +10,6 @@ export default function App() {
   ]);
   const [fixedRedTicks, setFixedRedTicks] = useState([]);
 
-  const handleDrop = (e) => {
-    const tickIndex = parseInt(e.dataTransfer.getData("text/plain"));
-    const rect = e.currentTarget.getBoundingClientRect();
-    const dropX = e.clientX - rect.left;
-    const dropY = e.clientY - rect.top;
-    const nearest = getClosestPositionName(dropX, dropY);
-
-    const redOccupied = fixedRedTicks.includes(nearest);
-    const alreadyUsed = userTicks.some(
-      (tick, idx) => tick.position === nearest && idx !== tickIndex
-    );
-
-    if (redOccupied || alreadyUsed) return;
-
-    const newTicks = userTicks.map((tick, index) =>
-      index === tickIndex ? { position: nearest } : tick
-    );
-    setUserTicks(newTicks);
-  };
-
   const handlePrintAndFetch = () => {
     const userPositions = userTicks
       .filter((tick) => tick.position)
@@ -61,7 +17,6 @@ export default function App() {
 
     console.log("User ticks:", userPositions);
 
-    // Call startGame with userPositions and setter for red ticks
     startGame(userPositions, setFixedRedTicks);
   };
 
@@ -85,7 +40,7 @@ export default function App() {
         className="relative"
         style={{ width: 200, height: 200 }}
         onDragOver={(e) => e.preventDefault()}
-        onDrop={handleDrop}
+        onDrop={(e) => handleDrop(e, userTicks, fixedRedTicks, setUserTicks)}
       >
         {/* SVG board */}
         <svg width={200} height={200} className="absolute top-0 left-0">
