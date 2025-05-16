@@ -39,4 +39,34 @@ function startGame(userPositions, setFixedRedTicks) {
     });
 }
 
-export { startGame };
+function getNextMovement(userPositions, fixedRedTicks, setFixedRedTicks) {
+  fetch("http://localhost:3001/get-next-movement", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      UserPositions: userPositions,
+      MyPositions: fixedRedTicks,
+    }),
+  })
+    .then((res) => {
+      if (!res.ok) {
+        throw new Error(`HTTP error! Status: ${res.status}`);
+      }
+      return res.json();
+    })
+    .then((data) => {
+      console.log("Prolog result (string):", data.result);
+
+      const fixedString = data.result.replace(/([a-zA-Z])/g, '"$1"');
+      const positionsArray = JSON.parse(fixedString);
+      setFixedRedTicks(positionsArray);
+    })
+    .catch((error) => {
+      console.error("Error fetching from backend:", error);
+    });
+}
+
+
+export { startGame,getNextMovement };

@@ -121,8 +121,8 @@ get_my_winning_movement(MyPositions, Board, NewPositions) :-
     !.
 
 
-get_user_wining_avoiding_movement(MyPositions, Board, NewPositions) :-
-    get_dangerous_positions(MyPositions, Board, DpList),
+get_user_wining_avoiding_movement(UserPositions,MyPositions, Board, NewPositions) :-
+    get_dangerous_positions(UserPositions, Board, DpList),
     (
         try_move(MyPositions, DpList, Board, [Removed, Missing])
     ->
@@ -169,5 +169,5 @@ get_next_movement(UserPositions, MyPositions, NewPositions) :-
     ->
         true
     ;
-        get_user_wining_avoiding_movement(MyPositions, Board, NewPositions)
+        get_user_wining_avoiding_movement(UserPositions,MyPositions, Board, NewPositions)
     ).

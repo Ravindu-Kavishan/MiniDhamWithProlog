@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { startGame } from "./backendCalling";
+import { startGame, getNextMovement } from "./backendCalling";
 import { getClosestPositionName, namedPositions, handleDrop } from "./utils";
 
 export default function App() {
@@ -9,6 +9,7 @@ export default function App() {
     { position: null },
   ]);
   const [fixedRedTicks, setFixedRedTicks] = useState([]);
+  const [isStarted, setIsStarted] = useState(false);
 
   const handlePrintAndFetch = () => {
     const userPositions = userTicks
@@ -17,7 +18,13 @@ export default function App() {
 
     console.log("User ticks:", userPositions);
 
-    startGame(userPositions, setFixedRedTicks);
+    if (!isStarted) {
+      startGame(userPositions, setFixedRedTicks);
+      setIsStarted(true);
+    } else {
+      console.log("Red ticks:", fixedRedTicks);
+      getNextMovement(userPositions, fixedRedTicks, setFixedRedTicks);
+    }
   };
 
   return (
@@ -126,7 +133,7 @@ export default function App() {
         className="mt-4 px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
         onClick={handlePrintAndFetch}
       >
-        Submit & Get Red Ticks
+        {isStarted ? "Play" : "Start"}
       </button>
     </div>
   );
