@@ -39,7 +39,12 @@ function startGame(userPositions, setFixedRedTicks) {
     });
 }
 
-function getNextMovement(userPositions, fixedRedTicks, setFixedRedTicks) {
+function getNextMovement(
+  userPositions,
+  fixedRedTicks,
+  setFixedRedTicks,
+  setMessage
+) {
   fetch("http://localhost:3001/get-next-movement", {
     method: "POST",
     headers: {
@@ -58,7 +63,8 @@ function getNextMovement(userPositions, fixedRedTicks, setFixedRedTicks) {
     })
     .then((data) => {
       console.log("Prolog result (string):", data.result);
-      if (data.result === "you are won") {
+      if (data.result === "you are won_3318") {
+        setMessage("you are won");
         console.log(
           "-----------------------------won---------------------------------------------"
         );

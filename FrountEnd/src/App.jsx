@@ -3,6 +3,7 @@ import { startGame, getNextMovement } from "./backendCalling";
 import { getClosestPositionName, namedPositions, handleDrop } from "./utils";
 
 export default function App() {
+  const [initialUserPositions, setInitialUserPositions] = useState([]);
   const [userTicks, setUserTicks] = useState([
     { position: null },
     { position: null },
@@ -10,25 +11,42 @@ export default function App() {
   ]);
   const [fixedRedTicks, setFixedRedTicks] = useState([]);
   const [isStarted, setIsStarted] = useState(false);
+  const [message, setMessage] = useState("");
 
   const handlePrintAndFetch = () => {
     const userPositions = userTicks
       .filter((tick) => tick.position)
       .map((tick) => tick.position);
 
-    console.log("User ticks:", userPositions);
-
     if (!isStarted) {
-      startGame(userPositions, setFixedRedTicks);
-      setIsStarted(true);
+      // Make sure all ticks are placed
+      if (userPositions.length === 3) {
+        startGame(userPositions, setFixedRedTicks);
+        setInitialUserPositions(userPositions);
+        setIsStarted(true);
+      }
     } else {
-      console.log("Red ticks:", fixedRedTicks);
-      getNextMovement(userPositions, fixedRedTicks, setFixedRedTicks);
+      // Game already started — check if exactly one tick has moved
+      let changedCount = 0;
+      for (let i = 0; i < 3; i++) {
+        if (userPositions[i] !== initialUserPositions[i]) {
+          changedCount++;
+        }
+      }
+
+      if (changedCount === 1) {
+        console.log("Red ticks:", fixedRedTicks);
+        getNextMovement(userPositions, fixedRedTicks, setFixedRedTicks,setMessage);
+        setInitialUserPositions(userPositions); // update for next move
+      } else {
+        alert("You can only move ONE blue tick before pressing play.");
+      }
     }
   };
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 gap-4">
+      <div className="text-green-600"><h1>{message}</h1></div>
       {/* Draggable Blue Ticks */}
       <div className="flex gap-4">
         {userTicks.map((tick, index) => (
@@ -42,7 +60,6 @@ export default function App() {
         ))}
       </div>
 
-      
       <div
         className="relative"
         style={{ width: 200, height: 200 }}
@@ -130,8 +147,13 @@ export default function App() {
 
       {/* Button */}
       <button
-        className="mt-4 px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
+        className={`mt-4 px-4 py-2 rounded text-white transition-colors ${
+          userTicks.every((tick) => tick.position)
+            ? "bg-green-600 hover:bg-green-700"
+            : "bg-gray-400 cursor-not-allowed"
+        }`}
         onClick={handlePrintAndFetch}
+        disabled={!userTicks.every((tick) => tick.position)}
       >
         {isStarted ? "Play" : "Start"}
       </button>

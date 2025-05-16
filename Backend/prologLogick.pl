@@ -1,6 +1,3 @@
-
-
-
 % --- Game Board Definitions ---
 line([a,b,c]).
 line([d,e,f]).
@@ -126,16 +123,19 @@ get_my_winning_movement(MyPositions, Board, NewPositions) :-
 
 
 % --- Helper: Check if any position in List2 is adjacent to Position1 ---
-adjacent_to_any(_, []) :- fail.
-adjacent_to_any(Pos, [H|T]) :-
-    adjacent(Pos, H), !;
-    adjacent_to_any(Pos, T).
+adjacent_to_any(Elem, [H | _], H) :- adjacent(Elem, H), !.
+adjacent_to_any(Elem, [_ | T], Match) :-
+    adjacent_to_any(Elem, T, Match).
+
+
 
 % --- Find a position in List that is adjacent to any in MyPositions ---
-find_adjacent_to_any([H | _], MyPositions, H) :-
-    adjacent_to_any(H, MyPositions), !.
+find_adjacent_to_any([H | _], MyPositions, [H, Match]) :-
+    adjacent_to_any(H, MyPositions, Match), !.
 find_adjacent_to_any([_ | T], MyPositions, Result) :-
     find_adjacent_to_any(T, MyPositions, Result).
+
+
 
 get_user_wining_avoiding_movement(UserPositions, MyPositions, Board, NewPositions) :-
     get_dangerous_positions(UserPositions, Board, DpList),
@@ -147,13 +147,13 @@ get_user_wining_avoiding_movement(UserPositions, MyPositions, Board, NewPosition
         % No valid move found, pick an empty position adjacent to current MyPositions
         positions(AllPositions),
         subtract(AllPositions, Board, EmptyPositions),
-        find_adjacent_to_any(EmptyPositions, MyPositions, Missing),
-        MyPositions = [Removed | _]  % arbitrarily remove the first piece
+        find_adjacent_to_any(EmptyPositions, MyPositions, [Missing, Removed])
     ),
     % Replace Removed with Missing
     select(Removed, MyPositions, Temp),
     NewPositions = [Missing | Temp],
     !.
+
 
 
 
