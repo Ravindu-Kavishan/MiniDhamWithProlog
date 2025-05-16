@@ -40,7 +40,6 @@ export default function App() {
     const dropY = e.clientY - rect.top;
     const nearest = getClosestPositionName(dropX, dropY);
 
-    // Block placing on red tick positions or duplicate user positions
     const redOccupied = fixedRedTicks.includes(nearest);
     const alreadyUsed = userTicks.some((tick, idx) => tick.position === nearest && idx !== tickIndex);
 
@@ -52,20 +51,6 @@ export default function App() {
     setUserTicks(newTicks);
   };
 
-  // const handlePrintAndFetch = () => {
-  //   const userPositions = userTicks
-  //     .filter(tick => tick.position)
-  //     .map(tick => tick.position);
-
-  //   console.log('User ticks:', userPositions);
-
-  //   // Simulated backend call
-  //   setTimeout(() => {
-  //     const backendResponse = ['a', 'b', 'e']; // Replace with real backend call
-  //     setFixedRedTicks(backendResponse);
-  //   }, 500);
-  // };
-
 
   const handlePrintAndFetch = () => {
   const userPositions = userTicks
@@ -74,7 +59,7 @@ export default function App() {
 
   console.log('User ticks:', userPositions);
 
-  fetch('http://localhost:3001/run-prolog', {
+  fetch('http://localhost:3001/start-game', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',

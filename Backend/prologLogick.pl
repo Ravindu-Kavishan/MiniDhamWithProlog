@@ -99,9 +99,74 @@ filter_matching_lists(ListOne, [_ | Tail], FilteredTail) :-
 
 % --- Start the game ---
 start_game(UserPositions,Board, BestValidPositions) :-
-    length(UserPositions, 3),
     valid_placement(UserPositions),
     red_valid_placement(UserPositions, RedValidPositions),
     get_dangerous_positions(UserPositions, Board, DangerousPositions),  % Board is same as UserPositions
     filter_matching_lists(DangerousPositions,RedValidPositions,BestValidPositions),
     !.
+
+isWon(PosList) :-
+    forms_line(PosList),
+    write("you are won").
+    
+
+get_my_winning_movement(MyPositions, Board, NewPositions) :-
+    get_dangerous_positions(MyPositions, Board, DpList),
+    get_line_filling_positions(MyPositions, LFP2DList),
+    member(Missing, DpList),
+    member([Removed, Missing], LFP2DList),
+    select(Removed, MyPositions, Temp),
+    \+ member(Missing, Temp),
+    NewPositions = [Missing | Temp],
+    !.
+
+
+get_user_wining_avoiding_movement(MyPositions, Board, NewPositions) :-
+    get_dangerous_positions(MyPositions, Board, DpList),
+    (
+        try_move(MyPositions, DpList, Board, [Removed, Missing])
+    ->
+        true
+    ;
+        % No valid move found, pick any available empty position
+        positions(AllPositions),
+        subtract(AllPositions, Board, EmptyPositions),
+        EmptyPositions = [Missing | _],
+        MyPositions = [Removed | _]  % arbitrarily remove the first user piece
+    ),
+    % Update MyPositions by removing 'Removed' and adding 'Missing'
+    select(Removed, MyPositions, Temp),
+    NewPositions = [Missing | Temp],
+    !.
+
+
+% Try moving each UserPosition to each DangerousPosition
+try_move([Removed | _], [Missing | _], Board, [Removed, Missing]) :-
+    isMovable(Removed, Missing, Board),
+    !.
+
+try_move([Removed | RestUser], [Missing | RestDanger], Board, Result) :-
+    (
+        isMovable(Removed, Missing, Board)
+    ->
+        Result = [Removed, Missing]
+    ;
+        try_move(RestUser, [Missing | RestDanger], Board, Result)
+    ).
+
+try_move(UserList, [_ | RestDanger], Board, Result) :-
+    try_move(UserList, RestDanger, Board, Result).
+
+
+get_next_movement(UserPositions, MyPositions, Board, NewPositions) :-
+    (
+        isWon(UserPositions)
+    ->
+        _ = UserPositions  
+    ;
+        get_my_winning_movement(MyPositions, Board, NewPositions)
+    ->
+        true
+    ;
+        get_user_wining_avoiding_movement(MyPositions, Board, NewPositions)
+    ).
