@@ -1,7 +1,9 @@
 const express = require("express");
+const cors = require("cors");
 const { exec } = require("child_process");
 const app = express();
 
+app.use(cors()); // Allow all origins
 app.use(express.json());
 
 function runDirCommand() {
@@ -16,7 +18,9 @@ function runDirCommand() {
           return reject(`Shell stderr: ${stderr}`);
         }
 
-        resolve(stdout.trim().split("\r\n"));
+        // Join lines into one string
+        const resultString = stdout.trim().split("\r\n").join("");
+        resolve(resultString);
       }
     );
   });
@@ -25,7 +29,7 @@ function runDirCommand() {
 app.post("/run-prolog", async (req, res) => {
   try {
     const result = await runDirCommand();
-    res.json({ result });
+    res.json({ result });  // result is now a string
   } catch (err) {
     console.error("Shell execution error:", err);
     res.status(500).json({ error: err.toString() });

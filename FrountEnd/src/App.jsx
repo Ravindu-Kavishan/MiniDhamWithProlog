@@ -52,28 +52,68 @@ export default function App() {
     setUserTicks(newTicks);
   };
 
+  // const handlePrintAndFetch = () => {
+  //   const userPositions = userTicks
+  //     .filter(tick => tick.position)
+  //     .map(tick => tick.position);
+
+  //   console.log('User ticks:', userPositions);
+
+  //   // Simulated backend call
+  //   setTimeout(() => {
+  //     const backendResponse = ['a', 'b', 'e']; // Replace with real backend call
+  //     setFixedRedTicks(backendResponse);
+  //   }, 500);
+  // };
+
+
   const handlePrintAndFetch = () => {
-    const userPositions = userTicks
-      .filter(tick => tick.position)
-      .map(tick => tick.position);
+  const userPositions = userTicks
+    .filter(tick => tick.position)
+    .map(tick => tick.position);
 
-    console.log('User ticks:', userPositions);
+  console.log('User ticks:', userPositions);
 
-    // Simulated backend call
-    setTimeout(() => {
-      const backendResponse = ['a', 'b', 'e']; // Replace with real backend call
-      setFixedRedTicks(backendResponse);
-    }, 500);
+  fetch('http://localhost:3001/run-prolog', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ input: userPositions }),
+  })
+    .then((res) => {
+      if (!res.ok) {
+        throw new Error(`HTTP error! Status: ${res.status}`);
+      }
+      return res.json();
+    })
+    .then((data) => {
+      console.log('Prolog result (string):', data.result);
 
-    // Real backend example (uncomment when backend is ready):
-    /*
-    fetch('/api/get-red-positions')
-      .then(res => res.json())
-      .then(data => {
-        setFixedRedTicks(data.positions);
-      });
-    */
-  };
+      const jsonString = data.result.replace(/([a-zA-Z])/g, '"$1"');
+
+      let resultArray;
+      try {
+        resultArray = JSON.parse(jsonString);
+      } catch (err) {
+        console.error("Error parsing Prolog result string to array:", err);
+        resultArray = [];
+      }
+
+      if (Array.isArray(resultArray) && resultArray.length > 0) {
+        const randomIndex = Math.floor(Math.random() * resultArray.length);
+        const selected = resultArray[randomIndex];
+        setFixedRedTicks(selected);
+      } else {
+        console.warn('No valid result received from backend.');
+      }
+    })
+    .catch((error) => {
+      console.error('Error fetching from backend:', error);
+    });
+};
+
+
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 gap-4">
