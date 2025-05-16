@@ -158,7 +158,8 @@ try_move(UserList, [_ | RestDanger], Board, Result) :-
     try_move(UserList, RestDanger, Board, Result).
 
 
-get_next_movement(UserPositions, MyPositions, Board, NewPositions) :-
+get_next_movement(UserPositions, MyPositions, NewPositions) :-
+    append(UserPositions, MyPositions, Board),
     (
         isWon(UserPositions)
     ->
