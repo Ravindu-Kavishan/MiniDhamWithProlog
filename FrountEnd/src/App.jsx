@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
+import { startGame } from "./utils";
 
 const namedPositions = {
   a: { x: 0, y: 0 },
@@ -13,7 +14,7 @@ const namedPositions = {
 };
 
 const getClosestPositionName = (x, y) => {
-  let closest = 'a';
+  let closest = "a";
   let minDist = Infinity;
   for (const [key, pos] of Object.entries(namedPositions)) {
     const dist = Math.hypot(x - pos.x, y - pos.y);
@@ -34,14 +35,16 @@ export default function App() {
   const [fixedRedTicks, setFixedRedTicks] = useState([]);
 
   const handleDrop = (e) => {
-    const tickIndex = parseInt(e.dataTransfer.getData('text/plain'));
+    const tickIndex = parseInt(e.dataTransfer.getData("text/plain"));
     const rect = e.currentTarget.getBoundingClientRect();
     const dropX = e.clientX - rect.left;
     const dropY = e.clientY - rect.top;
     const nearest = getClosestPositionName(dropX, dropY);
 
     const redOccupied = fixedRedTicks.includes(nearest);
-    const alreadyUsed = userTicks.some((tick, idx) => tick.position === nearest && idx !== tickIndex);
+    const alreadyUsed = userTicks.some(
+      (tick, idx) => tick.position === nearest && idx !== tickIndex
+    );
 
     if (redOccupied || alreadyUsed) return;
 
@@ -51,54 +54,16 @@ export default function App() {
     setUserTicks(newTicks);
   };
 
-
   const handlePrintAndFetch = () => {
-  const userPositions = userTicks
-    .filter(tick => tick.position)
-    .map(tick => tick.position);
+    const userPositions = userTicks
+      .filter((tick) => tick.position)
+      .map((tick) => tick.position);
 
-  console.log('User ticks:', userPositions);
+    console.log("User ticks:", userPositions);
 
-  fetch('http://localhost:3001/start-game', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ input: userPositions }),
-  })
-    .then((res) => {
-      if (!res.ok) {
-        throw new Error(`HTTP error! Status: ${res.status}`);
-      }
-      return res.json();
-    })
-    .then((data) => {
-      console.log('Prolog result (string):', data.result);
-
-      const jsonString = data.result.replace(/([a-zA-Z])/g, '"$1"');
-
-      let resultArray;
-      try {
-        resultArray = JSON.parse(jsonString);
-      } catch (err) {
-        console.error("Error parsing Prolog result string to array:", err);
-        resultArray = [];
-      }
-
-      if (Array.isArray(resultArray) && resultArray.length > 0) {
-        const randomIndex = Math.floor(Math.random() * resultArray.length);
-        const selected = resultArray[randomIndex];
-        setFixedRedTicks(selected);
-      } else {
-        console.warn('No valid result received from backend.');
-      }
-    })
-    .catch((error) => {
-      console.error('Error fetching from backend:', error);
-    });
-};
-
-
+    // Call startGame with userPositions and setter for red ticks
+    startGame(userPositions, setFixedRedTicks);
+  };
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 gap-4">
@@ -108,9 +73,9 @@ export default function App() {
           <div
             key={index}
             draggable
-            onDragStart={(e) => e.dataTransfer.setData('text/plain', index)}
+            onDragStart={(e) => e.dataTransfer.setData("text/plain", index)}
             className="w-4 h-4 bg-blue-500 rounded-full cursor-grab"
-            style={{ visibility: tick.position ? 'hidden' : 'visible' }}
+            style={{ visibility: tick.position ? "hidden" : "visible" }}
           ></div>
         ))}
       </div>
@@ -124,11 +89,47 @@ export default function App() {
       >
         {/* SVG board */}
         <svg width={200} height={200} className="absolute top-0 left-0">
-          <rect x="0" y="0" width="200" height="200" stroke="black" strokeWidth="3" fill="none" />
-          <line x1="100" y1="0" x2="100" y2="200" stroke="black" strokeWidth="3" />
-          <line x1="0" y1="100" x2="200" y2="100" stroke="black" strokeWidth="3" />
-          <line x1="0" y1="0" x2="200" y2="200" stroke="black" strokeWidth="3" />
-          <line x1="200" y1="0" x2="0" y2="200" stroke="black" strokeWidth="3" />
+          <rect
+            x="0"
+            y="0"
+            width="200"
+            height="200"
+            stroke="black"
+            strokeWidth="3"
+            fill="none"
+          />
+          <line
+            x1="100"
+            y1="0"
+            x2="100"
+            y2="200"
+            stroke="black"
+            strokeWidth="3"
+          />
+          <line
+            x1="0"
+            y1="100"
+            x2="200"
+            y2="100"
+            stroke="black"
+            strokeWidth="3"
+          />
+          <line
+            x1="0"
+            y1="0"
+            x2="200"
+            y2="200"
+            stroke="black"
+            strokeWidth="3"
+          />
+          <line
+            x1="200"
+            y1="0"
+            x2="0"
+            y2="200"
+            stroke="black"
+            strokeWidth="3"
+          />
         </svg>
 
         {/* Red (fixed) ticks */}
@@ -154,7 +155,7 @@ export default function App() {
             <div
               key={`user-${index}`}
               draggable
-              onDragStart={(e) => e.dataTransfer.setData('text/plain', index)}
+              onDragStart={(e) => e.dataTransfer.setData("text/plain", index)}
               className="absolute w-4 h-4 bg-blue-500 rounded-full cursor-grab"
               style={{
                 left: pos.x - 8,
