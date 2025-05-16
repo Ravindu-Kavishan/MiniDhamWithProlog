@@ -184,11 +184,11 @@ get_next_movement(UserPositions, MyPositions, NewPositions) :-
     (
         isWon(UserPositions)
     ->
-        write("you are won") 
+        write("you won") 
     ;
         isWon(MyPositions)
     ->
-        write("I am won")
+        write("I won")
     ;
         get_my_winning_movement(MyPositions, Board, NewPositions)
     ->

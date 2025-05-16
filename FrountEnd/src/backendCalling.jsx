@@ -67,10 +67,10 @@ function getNextMovement(
     })
     .then((data) => {
       console.log("Prolog result (string):", data.result);
-      if (data.result === "you are won_3318") {
-        setMessage("you are won");
-      } else if (data.result === "I am won_3318") {
-        setErrmsg("I am won.");
+      if (data.result === "you won_3318") {
+        setMessage("you won");
+      } else if (data.result === "I won_3318") {
+        setErrmsg("I won.");
       } else {
         const fixedString = data.result.replace(/([a-zA-Z])/g, '"$1"');
         const positionsArray = JSON.parse(fixedString);

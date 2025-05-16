@@ -22,7 +22,7 @@ export default function App() {
     if (!isStarted) {
       // Make sure all ticks are placed
       if (userPositions.length === 3) {
-        startGame(userPositions, setFixedRedTicks,setErrmsg);
+        startGame(userPositions, setFixedRedTicks, setErrmsg);
         setInitialUserPositions(userPositions);
         setIsStarted(true);
       }
@@ -37,7 +37,13 @@ export default function App() {
 
       if (changedCount === 1) {
         console.log("Red ticks:", fixedRedTicks);
-        getNextMovement(userPositions, fixedRedTicks, setFixedRedTicks,setMessage,setErrmsg);
+        getNextMovement(
+          userPositions,
+          fixedRedTicks,
+          setFixedRedTicks,
+          setMessage,
+          setErrmsg
+        );
         setInitialUserPositions(userPositions); // update for next move
       } else {
         alert("You can only move ONE blue tick before pressing play.");
@@ -47,8 +53,12 @@ export default function App() {
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 gap-4">
-      <div className="text-green-600"><h1>{message}</h1></div>
-      <div className="text-red-600"><h1>{errmsg}</h1></div>
+      <div className="text-green-600">
+        <h1>{message}</h1>
+      </div>
+      <div className="text-red-600">
+        <h1>{errmsg}</h1>
+      </div>
       {/* Draggable Blue Ticks */}
       <div className="flex gap-4">
         {userTicks.map((tick, index) => (
@@ -148,17 +158,20 @@ export default function App() {
       </div>
 
       {/* Button */}
-      <button
-        className={`mt-4 px-4 py-2 rounded text-white transition-colors ${
-          userTicks.every((tick) => tick.position)
-            ? "bg-green-600 hover:bg-green-700"
-            : "bg-gray-400 cursor-not-allowed"
-        }`}
-        onClick={handlePrintAndFetch}
-        disabled={!userTicks.every((tick) => tick.position)}
-      >
-        {isStarted ? "Play" : "Start"}
-      </button>
+      {/* Button (only show if no error) */}
+      {!errmsg && (
+        <button
+          className={`mt-4 px-4 py-2 rounded text-white transition-colors ${
+            userTicks.every((tick) => tick.position)
+              ? "bg-green-600 hover:bg-green-700"
+              : "bg-gray-400 cursor-not-allowed"
+          }`}
+          onClick={handlePrintAndFetch}
+          disabled={!userTicks.every((tick) => tick.position)}
+        >
+          {isStarted ? "Play" : "Start"}
+        </button>
+      )}
     </div>
   );
 }
