@@ -98,16 +98,19 @@ filter_matching_lists(ListOne, [_ | Tail], FilteredTail) :-
     filter_matching_lists(ListOne, Tail, FilteredTail).
 
 % --- Start the game ---
-start_game(UserPositions,Board, BestValidPositions) :-
-    valid_placement(UserPositions),
-    red_valid_placement(UserPositions, RedValidPositions),
-    get_dangerous_positions(UserPositions, Board, DangerousPositions),  % Board is same as UserPositions
-    filter_matching_lists(DangerousPositions,RedValidPositions,BestValidPositions),
+start_game(UserPositions, Board, BestValidPositions) :-
+    ( valid_placement(UserPositions) ->
+        red_valid_placement(UserPositions, RedValidPositions),
+        get_dangerous_positions(UserPositions, Board, DangerousPositions),  % Board is same as UserPositions
+        filter_matching_lists(DangerousPositions, RedValidPositions, BestValidPositions)
+    ;
+        writeln('invalid positions')
+    ),
     !.
 
+
 isWon(PosList) :-
-    forms_line(PosList),
-    write("you are won").
+    forms_line(PosList).
     
 
 get_my_winning_movement(MyPositions, Board, NewPositions) :-
@@ -181,7 +184,11 @@ get_next_movement(UserPositions, MyPositions, NewPositions) :-
     (
         isWon(UserPositions)
     ->
-        _ = UserPositions  
+        write("you are won") 
+    ;
+        isWon(MyPositions)
+    ->
+        write("I am won")
     ;
         get_my_winning_movement(MyPositions, Board, NewPositions)
     ->

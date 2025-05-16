@@ -12,6 +12,7 @@ export default function App() {
   const [fixedRedTicks, setFixedRedTicks] = useState([]);
   const [isStarted, setIsStarted] = useState(false);
   const [message, setMessage] = useState("");
+  const [errmsg, setErrmsg] = useState("");
 
   const handlePrintAndFetch = () => {
     const userPositions = userTicks
@@ -21,7 +22,7 @@ export default function App() {
     if (!isStarted) {
       // Make sure all ticks are placed
       if (userPositions.length === 3) {
-        startGame(userPositions, setFixedRedTicks);
+        startGame(userPositions, setFixedRedTicks,setErrmsg);
         setInitialUserPositions(userPositions);
         setIsStarted(true);
       }
@@ -36,7 +37,7 @@ export default function App() {
 
       if (changedCount === 1) {
         console.log("Red ticks:", fixedRedTicks);
-        getNextMovement(userPositions, fixedRedTicks, setFixedRedTicks,setMessage);
+        getNextMovement(userPositions, fixedRedTicks, setFixedRedTicks,setMessage,setErrmsg);
         setInitialUserPositions(userPositions); // update for next move
       } else {
         alert("You can only move ONE blue tick before pressing play.");
@@ -47,6 +48,7 @@ export default function App() {
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 gap-4">
       <div className="text-green-600"><h1>{message}</h1></div>
+      <div className="text-red-600"><h1>{errmsg}</h1></div>
       {/* Draggable Blue Ticks */}
       <div className="flex gap-4">
         {userTicks.map((tick, index) => (
